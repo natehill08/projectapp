@@ -27,7 +27,7 @@ public class Main {
         settings.DRAWER(new ProjectDrawer());
         settings.Detect_Precision(10);
         settings.De_Radius(4);
-        settings.MSG_LOSSES_PER_HUNDRED(100);
+        settings.MSG_LOSSES_PER_HUNDRED(0);
 //		settings.GPS_POSITION_NOISE(-5);
 //		settings.GPS_ANGLE_NOISE(1);
 //		settings.BOT_RADIUS(400);
