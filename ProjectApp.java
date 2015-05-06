@@ -43,7 +43,8 @@ public class ProjectApp extends LogicThread
     //	private String leader = null;
     private boolean iamleader = false;
 
-    private enum Stage {
+    private enum Stage
+    {
         PICK, GO, DONE, ELECT, HOLD, MIDWAY
     };
 
@@ -59,7 +60,6 @@ public class ProjectApp extends LogicThread
                 robotIndex = i;
                 break;
             }
-
         }
 
         // instantiates each HashMap object in the array
@@ -83,7 +83,6 @@ public class ProjectApp extends LogicThread
             int setNum = Integer.parseInt(setNumStr);
             destinations.get(setNum).put(i.getName(), i);
         }
-
 
         //point the environment to internal data, so that we can update it
         obEnvironment = gvh.gps.getObspointPositions();
@@ -118,7 +117,7 @@ public class ProjectApp extends LogicThread
 
                         break;
                     case PICK:
-                        if(destinations.get(i).isEmpty())
+                        if(destinations.get(i).isEmpty()) //If there are no more available destinations (waypoints)...
                         {
                             if(i+1 >= numSetsWaypoints)
                             {
@@ -131,7 +130,6 @@ public class ProjectApp extends LogicThread
                         }
                         else
                         {
-
                             //			RobotMessage informleader = new RobotMessage("ALL", name, 21, le.getLeader());
                             //			gvh.comms.addOutgoingMessage(informleader);
 
@@ -158,34 +156,34 @@ public class ProjectApp extends LogicThread
                                 }
                             }
 
-						/*
-						else
-						{
-						currentDestination = gvh.gps.getPosition(le.getLeader());
-						currentDestination1 = new ItemPosition(currentDestination);
-						int newx, newy;
-						if(gvh.gps.getPosition(name).getX() < currentDestination1.getX())
-						{
-							newx = gvh.gps.getPosition(name).getX() - currentDestination1.getX()/8;
-						}
-						else
-						{
-							newx = gvh.gps.getPosition(name).getX() + currentDestination1.getX()/8;
-						}
-						if(gvh.gps.getPosition(name).getY() < currentDestination1.getY())
-						{
-							newy = gvh.gps.getPosition(name).getY() - currentDestination1.getY()/8;
-						}
-						else
-						{
-							newy = gvh.gps.getPosition(name).getY() + currentDestination1.getY()/8;
-						}
-						currentDestination1.setPos(newx, newy, (currentDestination1.getAngle()));
-		//				currentDestination1.setPos(currentDestination);
-						gvh.plat.moat.goTo(currentDestination1, obsList);
-						stage = Stage.HOLD;
-						}
-						*/
+                            /*
+                            else
+                            {
+                            currentDestination = gvh.gps.getPosition(le.getLeader());
+                            currentDestination1 = new ItemPosition(currentDestination);
+                            int newx, newy;
+                            if(gvh.gps.getPosition(name).getX() < currentDestination1.getX())
+                            {
+                                newx = gvh.gps.getPosition(name).getX() - currentDestination1.getX()/8;
+                            }
+                            else
+                            {
+                                newx = gvh.gps.getPosition(name).getX() + currentDestination1.getX()/8;
+                            }
+                            if(gvh.gps.getPosition(name).getY() < currentDestination1.getY())
+                            {
+                                newy = gvh.gps.getPosition(name).getY() - currentDestination1.getY()/8;
+                            }
+                            else
+                            {
+                                newy = gvh.gps.getPosition(name).getY() + currentDestination1.getY()/8;
+                            }
+                            currentDestination1.setPos(newx, newy, (currentDestination1.getAngle()));
+            				currentDestination1.setPos(currentDestination);
+                            gvh.plat.moat.goTo(currentDestination1, obsList);
+                            stage = Stage.HOLD;
+                            }
+                            */
                         }
                         break;
 
@@ -231,9 +229,10 @@ public class ProjectApp extends LogicThread
                                 {
                                     if(currentDestination != null)
                                     {
+                                        //THIS IS WHERE THE ROBOT PICKS UP THE SPOT!
                                         destinations.get(i).remove(currentDestination.getName());
-                                       // RobotMessage inform = new RobotMessage("ALL", name, ARRIVED_MSG, currentDestination.getName());
-                                      //  gvh.comms.addOutgoingMessage(inform);
+                                        RobotMessage informPickup = new RobotMessage("ALL", name, ARRIVED_MSG, currentDestination.getName());
+                                        gvh.comms.addOutgoingMessage(informPickup);
                                         stage = Stage.PICK;
                                     }
                                 }
@@ -253,13 +252,27 @@ public class ProjectApp extends LogicThread
 
                         break;
                     case HOLD:
-                        //			if(gvh.gps.getMyPosition().distanceTo(gvh.gps.getPosition(le.getLeader())) < 1000 )
-                        //			{
-                        //			stage = Stage.PICK;
-                        //		    }
-                        //			else
+                        //if(gvh.gps.getMyPosition().distanceTo(gvh.gps.getPosition(le.getLeader())) < 1000 )
+                        //{
+                        //      stage = Stage.PICK;
+                        //}
+                        //else
                     {
                         gvh.plat.moat.motion_stop();
+//                        //Hold position for some time..
+//                        try
+//                        {
+//                            System.out.printf("Bot %d sleeping...\n", this.robotIndex);
+//                            Thread.sleep(500);
+//                        }
+//                        catch(InterruptedException e)
+//                        {
+//                            System.out.printf("Couldn't sleep.");
+//                        }
+//                        //Then start again...
+//                        System.out.printf("Bot %d woke up.\n", this.robotIndex);
+//                        this.stage=Stage.GO;
+//                        gvh.plat.moat.motion_resume();
                     }
                     break;
 
@@ -283,6 +296,12 @@ public class ProjectApp extends LogicThread
         String posName = m.getContents(0);
         if(destinations.get(0).containsKey(posName))
             destinations.get(0).remove(posName);
+
+        if(m.getMID()==ARRIVED_MSG)
+        {
+            System.out.printf("Node %d got message from %s for removal of \"%s\".\n", this.robotIndex, m.getFrom(), m.getContents().get(0));
+            destinations.get(0).remove(m.getContents().get(0));
+        }
 
         if(currentDestination.getName().equals(posName))
         {
