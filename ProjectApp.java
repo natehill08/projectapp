@@ -17,7 +17,8 @@ import edu.illinois.mitra.starl.objects.*;
 import edu.illinois.mitra.starl.motion.*;
 import edu.illinois.mitra.starl.motion.MotionParameters.COLAVOID_MODE_TYPE;
 
-public class ProjectApp extends LogicThread {
+public class ProjectApp extends LogicThread
+{
     private static final boolean RANDOM_DESTINATION = false;
     public static final int ARRIVED_MSG = 22;
     private static final MotionParameters DEFAULT_PARAMETERS = MotionParameters.defaultParameters();
@@ -48,10 +49,13 @@ public class ProjectApp extends LogicThread {
 
     private Stage stage = Stage.PICK;
 
-    public ProjectApp(GlobalVarHolder gvh) {
+    public ProjectApp(GlobalVarHolder gvh)
+    {
         super(gvh);
-        for(int i = 0; i< gvh.gps.getPositions().getNumPositions(); i++){
-            if(gvh.gps.getPositions().getList().get(i).name == name){
+        for(int i = 0; i< gvh.gps.getPositions().getNumPositions(); i++)
+        {
+            if(gvh.gps.getPositions().getList().get(i).name == name)
+            {
                 robotIndex = i;
                 break;
             }
@@ -59,7 +63,8 @@ public class ProjectApp extends LogicThread {
         }
 
         // instantiates each HashMap object in the array
-        for(int i = 0; i < numSetsWaypoints; i++) {
+        for(int i = 0; i < numSetsWaypoints; i++)
+        {
             destinations.add(new HashMap<String, ItemPosition>());
         }
         le = new RandomLeaderElection(gvh);
@@ -72,7 +77,8 @@ public class ProjectApp extends LogicThread {
         gvh.plat.moat.setParameters(param);
 
         // this loop gets add each set of waypoints i to the hashmap at destinations(i)
-        for(ItemPosition i : gvh.gps.getWaypointPositions()) {
+        for(ItemPosition i : gvh.gps.getWaypointPositions())
+        {
             String setNumStr = i.getName().substring(0,1);
             int setNum = Integer.parseInt(setNumStr);
             destinations.get(setNum).put(i.getName(), i);
@@ -89,15 +95,18 @@ public class ProjectApp extends LogicThread {
     }
 
     @Override
-    public List<Object> callStarL() {
+    public List<Object> callStarL()
+    {
         int i = 0;
-        while(true) {
+        while(true)
+        {
             obEnvironment.updateObs();
 
             obsList.updateObs();
-            if((gvh.gps.getMyPosition().type == 0) || (gvh.gps.getMyPosition().type == 1)){
-
-                switch(stage) {
+            if((gvh.gps.getMyPosition().type == 0) || (gvh.gps.getMyPosition().type == 1))
+            {
+                switch(stage)
+                {
                     case ELECT:
 					/*
 					le.elect();
@@ -109,14 +118,18 @@ public class ProjectApp extends LogicThread {
 
                         break;
                     case PICK:
-                        if(destinations.get(i).isEmpty()) {
-                            if(i+1 >= numSetsWaypoints) {
+                        if(destinations.get(i).isEmpty())
+                        {
+                            if(i+1 >= numSetsWaypoints)
+                            {
                                 stage = Stage.DONE;
                             }
-                            else {
+                            else
+                            {
                                 i++;
                             }
-                        } else
+                        }
+                        else
                         {
 
                             //			RobotMessage informleader = new RobotMessage("ALL", name, 21, le.getLeader());
@@ -134,10 +147,12 @@ public class ProjectApp extends LogicThread {
 
                                 kdTree = RRTNode.stopNode;
                                 //wait when can not find path
-                                if(pathStack == null){
+                                if(pathStack == null)
+                                {
                                     stage = Stage.HOLD;
                                 }
-                                else{
+                                else
+                                {
                                     preDestination = null;
                                     stage = Stage.MIDWAY;
                                 }
@@ -176,36 +191,46 @@ public class ProjectApp extends LogicThread {
 
 
                     case MIDWAY:
-                        if(!gvh.plat.moat.inMotion) {
-                            if(pathStack == null){
+                        if(!gvh.plat.moat.inMotion)
+                        {
+                            if(pathStack == null)
+                            {
                                 stage = Stage.HOLD;
                                 // if can not find a path, wait for obstacle map to change
                                 break;
                             }
-                            if(!pathStack.empty()){
+                            if(!pathStack.empty())
+                            {
                                 //if did not reach last midway point, go back to path planning
-                                if(preDestination != null){
-                                    if((gvh.gps.getPosition(name).distanceTo(preDestination)>param.GOAL_RADIUS)){
+                                if(preDestination != null)
+                                {
+                                    if((gvh.gps.getPosition(name).distanceTo(preDestination)>param.GOAL_RADIUS))
+                                    {
                                         pathStack.clear();
                                         stage = Stage.PICK;
                                         break;
                                     }
                                     preDestination = pathStack.peek();
                                 }
-                                else{
+                                else
+                                {
                                     preDestination = pathStack.peek();
                                 }
                                 ItemPosition goMidPoint = pathStack.pop();
                                 gvh.plat.moat.goTo(goMidPoint, obsList);
                                 stage = Stage.MIDWAY;
                             }
-                            else{
-                                if((gvh.gps.getPosition(name).distanceTo(currentDestination)>param.GOAL_RADIUS)){
+                            else
+                            {
+                                if((gvh.gps.getPosition(name).distanceTo(currentDestination)>param.GOAL_RADIUS))
+                                {
                                     pathStack.clear();
                                     stage = Stage.PICK;
                                 }
-                                else{
-                                    if(currentDestination != null){
+                                else
+                                {
+                                    if(currentDestination != null)
+                                    {
                                         destinations.get(i).remove(currentDestination.getName());
                                        // RobotMessage inform = new RobotMessage("ALL", name, ARRIVED_MSG, currentDestination.getName());
                                       //  gvh.comms.addOutgoingMessage(inform);
@@ -217,7 +242,8 @@ public class ProjectApp extends LogicThread {
                         break;
 
                     case GO:
-                        if(!gvh.plat.moat.inMotion) {
+                        if(!gvh.plat.moat.inMotion)
+                        {
                             if(currentDestination != null)
                                 destinations.get(i).remove(currentDestination.getName());
                             //RobotMessage inform = new RobotMessage("ALL", name, ARRIVED_MSG, currentDestination.getName());
@@ -242,7 +268,8 @@ public class ProjectApp extends LogicThread {
                         return null;
                 }
             }
-            else{
+            else
+            {
                 currentDestination = getRandomElement(destinations.get(i));
                 gvh.plat.moat.goTo(currentDestination, obsList);
             }
@@ -251,12 +278,14 @@ public class ProjectApp extends LogicThread {
     }
 
     @Override
-    protected void receive(RobotMessage m) {
+    protected void receive(RobotMessage m)
+    {
         String posName = m.getContents(0);
         if(destinations.get(0).containsKey(posName))
             destinations.get(0).remove(posName);
 
-        if(currentDestination.getName().equals(posName)) {
+        if(currentDestination.getName().equals(posName))
+        {
             gvh.plat.moat.cancel();
             stage = Stage.PICK;
         }
@@ -266,7 +295,8 @@ public class ProjectApp extends LogicThread {
     private static final Random rand = new Random();
 
     @SuppressWarnings("unchecked")
-    private <X, T> T getRandomElement(Map<X, T> map) {
+    private <X, T> T getRandomElement(Map<X, T> map)
+    {
         if(RANDOM_DESTINATION)
             return (T) map.values().toArray()[rand.nextInt(map.size())];
         else
